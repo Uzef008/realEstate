@@ -12,8 +12,8 @@ def download_file(url, filename):
             f.write(r.content)
 
 # Google Drive direct links
-classifier_url = "https://drive.google.com/uc?id=1lygS65iMTywK_b4Cu6k3u2WvJNd-jMtR"
-regressor_url = "https://drive.google.com/uc?id=1K_JpJ95WR1vy_QKSc9LTd763JU8PzQlb"
+classifier_url = "https://drive.google.com/file/d/17xv3DEr9WS_uNTpuPpslCaWEd9Hi0Yhs"
+regressor_url = "https://drive.google.com/file/d/1hJ_xA1pEVSYW3iuqYAKJCPv1X5TsDu6X"
 
 # Download models if not present
 download_file(classifier_url, "classifier.pkl")
