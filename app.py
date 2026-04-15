@@ -2,29 +2,38 @@ import streamlit as st
 import pickle
 import numpy as np
 import os
-import requests
+import gdown
 
-# Function to download file from Google Drive
-def download_file(url, filename):
-    if not os.path.exists(filename):
-        r = requests.get(url)
-        with open(filename, "wb") as f:
-            f.write(r.content)
+# -------------------------------
+# Download Models from Google Drive
+# -------------------------------
 
-# Google Drive direct links
-classifier_url = "https://drive.google.com/file/d/17xv3DEr9WS_uNTpuPpslCaWEd9Hi0Yhs"
-regressor_url = "https://drive.google.com/file/d/1hJ_xA1pEVSYW3iuqYAKJCPv1X5TsDu6X"
+# Google Drive File IDs
+CLASSIFIER_ID = "17xv3DEr9WS_uNTpuPpslCaWEd9Hi0Yhs"
+REGRESSOR_ID = "1hJ_xA1pEVSYW3iuqYAKJCPv1X5TsDu6X"
 
-# Download models if not present
-download_file(classifier_url, "classifier.pkl")
-download_file(regressor_url, "regressor.pkl")
+def download_model(file_id, output):
+    if not os.path.exists(output):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output, quiet=False)
 
-# Load models
+# Download models
+download_model(CLASSIFIER_ID, "classifier.pkl")
+download_model(REGRESSOR_ID, "regressor.pkl")
+
+# -------------------------------
+# Load Models
+# -------------------------------
+
 with open("classifier.pkl", "rb") as f:
     clf = pickle.load(f)
 
 with open("regressor.pkl", "rb") as f:
     reg = pickle.load(f)
+
+# -------------------------------
+# Streamlit UI
+# -------------------------------
 
 st.title("Real Estate Investment Advisor")
 
@@ -38,13 +47,34 @@ floor = st.number_input("Floor No", min_value=0, max_value=50, value=1)
 total_floors = st.number_input("Total Floors", min_value=1, max_value=100, value=5)
 parking = st.number_input("Parking Space", min_value=0, max_value=5, value=1)
 
-# Dummy feature vector (must match training structure)
-input_data = np.array([[0, 0, 0, 0, bhk, size, price, price/size, 2000, 0, 0, floor, total_floors, 10, 2, 2, 1, parking, 1, 1, 1, 1]])
+# -------------------------------
+# Prediction
+# -------------------------------
 
 if st.button("Predict"):
+    
+    # Create input array (must match training feature order)
+    input_data = np.array([[ 
+        0, 0, 0, 0,         # Encoded categorical placeholders
+        bhk,
+        size,
+        price,
+        price / size,
+        2000,               # Year_Built (default)
+        0, 0,
+        floor,
+        total_floors,
+        10,                 # Age_of_Property
+        2, 2, 1,
+        parking,
+        1, 1, 1, 1
+    ]])
+
+    # Predictions
     prediction_clf = clf.predict(input_data)[0]
     prediction_reg = reg.predict(input_data)[0]
 
+    # Output
     if prediction_clf == 1:
         st.success("Good Investment")
     else:
